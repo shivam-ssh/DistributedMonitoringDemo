@@ -1,0 +1,22 @@
+{
+  "name": "project2",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon --require ./tracer.js server.mjs"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@fastify/cors": "^9.0.1",
+    "@opentelemetry/auto-instrumentations-node": "^0.46.1",
+    "@opentelemetry/exporter-trace-otlp-grpc": "^0.51.1",
+    "@opentelemetry/sdk-node": "^0.51.1",
+    "axios": "^1.7.2",
+    "fastify": "^4.27.0",
+    "prom-client": "^15.1.2",
+    "winston": "^3.13.0"
+  }
+}
