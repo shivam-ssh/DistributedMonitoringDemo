@@ -2,7 +2,7 @@ import fastify from "fastify";
 import cors from "@fastify/cors";
 import axios from "axios";
 import { logger } from "./logger.mjs";
-import { register, collectDefaultMetrics } from "prom-client";
+import { register, collectDefaultMetrics, Counter, Histogram } from "prom-client";
 
 collectDefaultMetrics();
 
@@ -12,6 +12,39 @@ await server.register(cors, {
   origin: "*",
 });
 
+// Create a custom counter metric
+const customCounter = new Counter({
+  name: "custom_counter",
+  help: "This is a custom counter",
+  labelNames: ["method", "route", "status_code"],
+});
+
+// Create a custom histogram metric
+const customHistogram = new Histogram({
+  name: "custom_histogram",
+  help: "This is a custom histogram",
+  labelNames: ["method", "route", "status_code"],
+});
+
+// Middleware to collect custom metrics
+server.addHook("onResponse", (request, reply, done) => {
+  const route = request.routerPath || "unknown_route";
+  const statusCode = reply.statusCode;
+
+  customCounter.labels(request.method, route, statusCode).inc();
+  customHistogram
+    .labels(request.method, route, statusCode)
+    .observe(reply.elapsedTime / 1000);
+  done();
+});
+
+server.register((instance, opts, done) => {
+  instance.addHook("onSend", (request, reply, payload, done) => {
+    reply.header("X-Response-Time", `${reply.elapsedTime}ms`);
+    done();
+  });
+  done();
+});
 
 server.get("/metrics", async (request, reply) => {
   try {
